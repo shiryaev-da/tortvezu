@@ -1,0 +1,285 @@
+--[Таблицы]
+Справочник товара
+    уникальный идентификатор,
+    тип,
+    наименование,
+    писание,
+    состав !!!
+
+Список ингридиентов для продукта
+    id состава,
+    группа состава,
+    id ингридиентов,
+
+Справочник ингридиентов цен товаров.
+    id ингридента,
+
+
+
+Таблица расходов и приходов товаров списком (Склад)
+    идентификатор товара,
+    код товара - в дальнейшем штрихкод,
+    дата поступления,
+    кол-во,
+
+
+Таблица заказов
+    номер заказа,
+    дата поступления,
+
+    статус,
+    комментарий покупателя,
+    комментарий продавца,
+    дата
+
+Таблица Корзина
+
+
+ Таблица акций на товары
+    id товара.
+    период старт
+    период конец
+    тип акции
+    скидка к цене.
+    картинка
+
+--[Расположение файлов]
+https://shi-ku.ru/img/tortvezu/product/duna1_1.png
+
+--[Сервисы]
+//Список актуальный продуктов в каталоге
+BEGIN
+	ORDS.define_module(
+		p_module_name	=>'mod_tvz',
+		p_base_path		=>'mod_tvz/',
+		p_items_per_page	=> 0
+	);
+
+	ORDS.define_template (
+		p_module_name	=>'mod_tvz',
+		p_pattern		=>'actual_katolog/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_tvz',
+		p_pattern			=>'actual_katolog/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".TVZ_REST_WEB.actual_katalog_DATA(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+
+https://shi-ku.ru:8443/ords/interval/mod_tvz/actual_katolog/
+{
+    "id_user": 1
+}
+
+//Сохранение и получение информации в корзине --todo { заготовка, нужно на Oracle написать процедуру}
+BEGIN
+	ORDS.define_template (
+		p_module_name	=>'mod_tvz',
+		p_pattern		=>'card_data/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_tvz',
+		p_pattern			=>'card_data/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".TVZ_REST_WEB.card_DATA(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+
+https://shi-ku.ru:8443/ords/interval/mod_tvz/card_data/
+{
+    "id_user": 1
+}
+
+//Сервис создания нового заказа пользователем -- готово
+входящий json
+[{"username":1,"idProduct":1,"countProduct":1,"nameProduct":"Вишня в шоколаде","propertyTextProduct":"Торт очень вкусный торт очень вкусный свежий премиум качество","countPorc":-10,"price":3347,"totalPrice":3347},{"username":1,"idProduct":2,"countProduct":1,"nameProduct":"Клубника-Кокос","propertyTextProduct":"Торт очень вкусный торт очень вкусный свежий премиум качество","countPorc":1,"price":2814,"totalPrice":2814}]
+
+BEGIN
+	ORDS.define_template (
+		p_module_name	=>'mod_tvz',
+		p_pattern		=>'insert_order_data/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_tvz',
+		p_pattern			=>'insert_order_data/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".TVZ_REST_WEB.INSERT_ORDER_DATA(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+
+https://shi-ku.ru:8443/ords/interval/mod_tvz/insert_order_data/
+[{"username":1,"idProduct":1,"countProduct":1,"nameProduct":"Вишня в шоколаде","propertyTextProduct":"Торт очень вкусный торт очень вкусный свежий премиум качество","countPorc":-10,"price":3347,"totalPrice":3347},{"username":1,"idProduct":2,"countProduct":1,"nameProduct":"Клубника-Кокос","propertyTextProduct":"Торт очень вкусный торт очень вкусный свежий премиум качество","countPorc":1,"price":2814,"totalPrice":2814}]
+
+
+--Сервис добавления/обновления информации по доставке в заказе
+
+BEGIN
+	ORDS.define_template (
+		p_module_name	=>'mod_tvz',
+		p_pattern		=>'insert_delivery_data/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_tvz',
+		p_pattern			=>'insert_delivery_data/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".TVZ_REST_WEB.INSERT_DELIVERY_DATA(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+
+https://shi-ku.ru:8443/ords/interval/mod_tvz/insert_delivery_data/
+[{"idOrder":204,"deliveryDate":"15.07.2022","timeFrom":"14:00","timeTo":"16:00","phoneNumberGot":"+1 (212) 554-54-56","iO":"Ирина","townName":"Красногорск","areaName":"","streetName":"Мира","houseNumber":"12","partHouseNumber":"3","doorKey":"","commentToDelivery":"Балабаново"}]
+
+
+
+
+
+
+--//Аутентификация пользователя в приложении
+--todo{ пока просто вход по uuid устройства и номеру, нужно номер убрать и просто по uuid если он есть в базе выполнять вход
+        если поле uuid пустое в базе, но номер телефона есть, нужно запросить номер телефона и получить в ответ номер из СМС (отправить смс)
+       }
+BEGIN
+	ORDS.define_template (
+		p_module_name	=>'mod_tvz',
+		p_pattern		=>'auth_user/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_tvz',
+		p_pattern			=>'auth_user/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".TVZ_REST_WEB.AUTH_USER(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+
+
+
+
+
+
+
+https://shi-ku.ru:8443/ords/interval/mod_tvz/auth_user/
+
+Входыщий json
+[{"phoneNumber":"9950010000","deviceId":"E65DD6F7-3A0D-4B9E-8FE3-651DAE31C602"}]
+
+
+--// Регистрация пользователя  (нужно собрать информацию по стране пользователя, и часовому поясу) -- заготовка не реализовано
+BEGIN
+	ORDS.define_template (
+		p_module_name	=>'mod_tvz',
+		p_pattern		=>'reg_user/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_tvz',
+		p_pattern			=>'reg_user/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".TVZ_REST_WEB.REGISTRATION_USER(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+
+Входящий json
+    все необходимые поля для регистрации
+
+--Сервис получения истории заказов пользователя и всех его параметров
+BEGIN
+	ORDS.define_template (
+		p_module_name	=>'mod_tvz',
+		p_pattern		=>'order_list/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_tvz',
+		p_pattern			=>'order_list/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".TVZ_REST_WEB.actual_order_DATA(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+--Входящий Json
+{"id_user": 1}
+https://shi-ku.ru:8443/ords/interval/mod_tvz/order_list/
+
+-----------------------------
+
+
+
+
+--\\Профиль
+
+//История заказов
+//Мои скидки
+//Профиль клиента
+--актуальный список товаров
+
+//Service save step DATA ON ACTION
+
+
+BEGIN
+--	ORDS.define_module(
+--		p_module_name	=>'mod_ohl',
+--		p_base_path		=>'mod_ohl/',
+--		p_items_per_page	=> 0
+--	);
+
+	ORDS.define_template (
+		p_module_name	=>'mod_ohl',
+		p_pattern		=>'data_step_acive/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_ohl',
+		p_pattern			=>'data_step_acive/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".OHL_REST_WEB.IN_STEP_DATA(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+
+--Cервис
+
+-------------------------------
+--servece getNewNumberAction
+--------------------------------
+BEGIN
+--	ORDS.define_module(
+--		p_module_name	=>'mod_ohl',
+--		p_base_path		=>'mod_ohl/',
+--		p_items_per_page	=> 0
+--	);
+
+	ORDS.define_template (
+		p_module_name	=>'mod_ohl',
+		p_pattern		=>'getNewNumberAction/'
+	);
+
+	ORDS.define_handler(
+		p_module_name		=>'mod_ohl',
+		p_pattern			=>'getNewNumberAction/',
+		p_method			=>'POST',
+		p_source_type		=> ORDS.source_type_plsql,
+		p_source			=> 'BEGIN "INTERVAL".OHL_REST_WEB.GET_NUMBER_ACTION(:body); END;',
+		p_items_per_page 	=> 0
+	);
+END;
+

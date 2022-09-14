@@ -1,0 +1,45 @@
+name: tortvezu
+description: A new Flutter project.
+
+publish_to:
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_spinkit: ^5.1.0
+  flutter_image_slideshow: ^0.1.2
+  web_ffi: ^0.7.2
+  circle_bottom_navigation_bar: ^1.0.0
+  cupertino_icons: ^1.0.2
+  http: ^0.13.4
+  device_info_plus: ^3.2.4
+  flutter_svg: ^1.1.0
+  mask_text_input_formatter: ^2.3.0
+  intl: ^0.17.0
+  gainer_crypto: ^0.0.6
+  cryptography: ^2.0.5
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^1.0.0
+
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - image/
+    - image/top_baner/
+    - image/mus_tort/
+    - image/profile/
+
